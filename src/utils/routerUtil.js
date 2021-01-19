@@ -32,36 +32,37 @@ function parseRoutes(routesConfig, routerMap) {
   routesConfig.forEach(item => {
     // 获取注册在 routerMap 中的 router，初始化 routeCfg
     let router = undefined, routeCfg = {}
-    if (typeof item === 'string' && routerMap[item]) {
+    if (typeof item === 'string') {
       router = routerMap[item]
       routeCfg = {path: router.path || item, router: item}
     } else if (typeof item === 'object') {
       router = routerMap[item.router]
       routeCfg = item
     }
-    // 从 router 和 routeCfg 解析路由
     if (!router) {
       console.warn(`can't find register for router ${routeCfg.router}, please register it in advance.`)
-    } else {
-      const route = {
-        path: routeCfg.path || router.path || routeCfg.router,
-        name: routeCfg.name || router.name,
-        component: router.component,
-        redirect: routeCfg.redirect || router.redirect,
-        meta: {
-          authority: routeCfg.authority || router.authority || '*',
-          icon: routeCfg.icon || router.icon,
-          page: routeCfg.page || router.page
-        }
-      }
-      if (routeCfg.invisible || router.invisible) {
-        route.meta.invisible = true
-      }
-      if (routeCfg.children && routeCfg.children.length > 0) {
-        route.children = parseRoutes(routeCfg.children, routerMap)
-      }
-      routes.push(route)
+      router = typeof item === 'string' ? {path: item, name: item} : item
     }
+    // 从 router 和 routeCfg 解析路由
+    const route = {
+      path: routeCfg.path || router.path || routeCfg.router,
+      name: routeCfg.name || router.name,
+      component: router.component,
+      redirect: routeCfg.redirect || router.redirect,
+      meta: {
+        authority: routeCfg.authority || router.authority || routeCfg.meta?.authority || router.meta?.authority || '*',
+        icon: routeCfg.icon || router.icon ||  routeCfg.meta?.icon || router.meta?.icon,
+        page: routeCfg.page || router.page ||  routeCfg.meta?.page || router.meta?.page,
+        link: routeCfg.link || router.link ||  routeCfg.meta?.link || router.meta?.link
+      }
+    }
+    if (routeCfg.invisible || router.invisible) {
+      route.meta.invisible = true
+    }
+    if (routeCfg.children && routeCfg.children.length > 0) {
+      route.children = parseRoutes(routeCfg.children, routerMap)
+    }
+    routes.push(route)
   })
   return routes
 }
